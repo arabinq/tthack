@@ -5,7 +5,7 @@ from selenium.webdriver.support import expected_conditions as EC
 from selenium.webdriver.common.keys import Keys
 import random
 import time
-from threading import Thread
+import tkinter as tk
 
 
 class Tthack:
@@ -64,7 +64,40 @@ class Tthack:
         return str(self.ans)
 
 
+class GUI:
+    def __init__(self):
+        self.window = tk.Tk()
+        type = tk.StringVar()
+        self.type = type
+        self.school_label = tk.Label(text="School")
+        self.school_entry = tk.Entry()
+        self.username_label = tk.Label(text="Username")
+        self.username_entry = tk.Entry()
+        self.password_label = tk.Label(text="Password")
+        self.password_entry = tk.Entry()
+        self.type_label = tk.Label(text="Game Mode")
+        self.type_entry_one = tk.Radiobutton(text="Garage", value="garage", variable="type")
+        self.type_entry_two = tk.Radiobutton(text="Festival", value="festival", variable="type")
+        self.submit = tk.Button(text="Start Hack", command=self.get_values)
+        self.school_label.pack()
+        self.school_entry.pack()
+        self.username_label.pack()
+        self.username_entry.pack()
+        self.password_label.pack()
+        self.password_entry.pack()
+        self.type_label.pack()
+        self.type_entry_one.pack()
+        self.type_entry_two.pack()
+        self.submit.pack()
+        self.window.mainloop()
 
+    def get_values(self):
+        self.school_text = self.school_entry.get()
+        self.username_text = self.username_entry.get()
+        self.password_text = self.password_entry.get()
+        self.type_text = self.type.get()
+        hack = Tthack(self.school_text, self.username_text, self.password_text, self.type_text)
+        hack.launch()
 
 
 if __name__ == '__main__':
@@ -72,5 +105,4 @@ if __name__ == '__main__':
     driver = webdriver.Chrome(path)
     driver.get('https://play.ttrockstars.com/auth/school/student')
     time.sleep(2)
-    hack = Tthack('al-fu', 'hassha', 'yyk', 'festival')
-    hack.launch()
+    gui = GUI()
