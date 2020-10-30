@@ -28,13 +28,6 @@ class Tthack:
         while True:
             self.answer = self.parse_question(driver.find_element_by_xpath(self.question_xpath))
             driver.find_element_by_xpath('/html/body').send_keys(self.answer, Keys.ENTER)
-            try:
-                element = WebDriverWait(driver, 5).until(
-                    EC.text_to_be_present_in_element((By.CLASS_NAME, "stamp center mat-white-color"), "Game Over!!")
-                )
-                print('game ended')
-            except:
-                print('game in progress')
 
     def parse_question(self, location):
         self.location = location
