@@ -5,6 +5,7 @@ import threading
 import time
 import sys
 import os
+import math
 
 def resource_path(relative_path):
     try:
@@ -18,13 +19,14 @@ class Bot:
         self.path = resource_path('./driver/chromedriver.exe')
 
 
-    def login(self, school, username, password, type):
+    def login(self, school, username, password, type, rounds):
         global gui
         global driver
 
         self.school = school
         self.username = username
         self.password = password
+        self.rounds = rounds
         self.type = type
 
         gui.update_status('Logging in...')
@@ -65,6 +67,8 @@ class Bot:
         global driver
         global gui
 
+
+
         if self.type == 'garage':
             gui.update_status('Going Into Garage Game...')
             self.question_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-garage/ttr-game-holder/div/div/div/ttr-game-footpedal/section[2]/section/section/ttr-game-question/span[2]'
@@ -78,11 +82,11 @@ class Bot:
             self.timer = int(driver.find_element_by_xpath('/html/body/ttr-root/ttr-root-app/div/div/section/ttr-play-page/section/div/ttr-festival-preview/ttr-game-preview/mat-card/div[2]/ttr-game-stages/div/div[1]/ttr-game-stage/div').text.strip())
             time.sleep(self.timer)
         gui.update_status('answering questions...')
-        while True:
+        for i in range(0, int(self.rounds)):
             time.sleep(6)
             self.t_end = time.time() + 60 * 3
             while time.time() < self.t_end:
-                time.sleep(0.2)
+                time.sleep(0.15)
                 try:
                     self.answer = self.parse_question(driver.find_element_by_xpath(self.question_xpath))
                     driver.find_element_by_xpath('/html/body').send_keys(self.answer, Keys.ENTER)
@@ -93,7 +97,7 @@ class Bot:
             self.play_again = driver.find_element_by_xpath('/html/body/ttr-root/ttr-root-app/div/div/section/ttr-garage/ttr-game-holder/div/div/div/button[2]')
             self.play_again.click()
 
-        gui.update_status('Hack ended...')
+        gui.update_status('Hack ended')
 
     def parse_question(self, location):
         self.location = location
@@ -132,6 +136,8 @@ class Gui:
             self.username_entry = tk.Entry()
             self.password_label = tk.Label(text="Password")
             self.password_entry = tk.Entry()
+            self.rounds_label = tk.Label(text="Number Of Rounds(Leave Blank For Infinite)")
+            self.rounds_entry = tk.Entry()
             self.type_label = tk.Label(text="Game Mode")
             self.type_entry_one = tk.Radiobutton(text="Garage", value="garage", variable=self.type)
             self.type_entry_two = tk.Radiobutton(text="Festival", value="festival", variable=self.type)
@@ -145,6 +151,8 @@ class Gui:
             self.username_entry.pack()
             self.password_label.pack()
             self.password_entry.pack()
+            self.rounds_label.pack()
+            self.rounds_entry.pack()
             self.type_label.pack()
             self.type_entry_one.pack()
             self.type_entry_two.pack()
@@ -160,9 +168,12 @@ class Gui:
         self.school_text = self.school_entry.get()
         self.username_text = self.username_entry.get()
         self.password_text = self.password_entry.get()
+        try:
+            self.rounds_text = int(self.rounds_entry.get())
+        except:
+            self.rounds_text = math.inf
         self.type_text = self.type.get()
-        print(self.type_text)
-        self.login = threading.Thread(target = bot.login, args=(self.school_text, self.username_text, self.password_text, self.type_text,))
+        self.login = threading.Thread(target = bot.login, args=(self.school_text, self.username_text, self.password_text, self.type_text, self.rounds_text,))
         self.login.start()
 
 
