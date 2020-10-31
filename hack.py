@@ -69,22 +69,8 @@ class Bot:
 
 
         gui.update_status(f'Going Into {self.type} Game...')
-        if self.type == 'garage':
-            self.question_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-garage/ttr-game-holder/div/div/div/ttr-game-footpedal/section[2]/section/section/ttr-game-question/span[2]'
-            self.play_again_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-garage/ttr-game-holder/div/div/div/button[2]'
-            self.play = driver.find_element_by_xpath('/html/body/ttr-root/ttr-root-app/div/div/section/ttr-play-page/section/div/ttr-garage-preview/ttr-game-preview/mat-card/div[1]/div[1]/section/section')
-            self.play.click()
-        elif self.type == 'festival':
-            self.question_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-festival/ttr-game-holder/div/div/div/ttr-game-footpedal/section[2]/section/section/ttr-game-question/span[2]'
-            self.play_again_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-garage/ttr-game-holder/div/div/div/button[2]'
-            self.play = driver.find_element_by_xpath('/html/body/ttr-root/ttr-root-app/div/div/section/ttr-play-page/section/div/ttr-festival-preview/ttr-game-preview/mat-card/div[2]/ttr-game-stages/div/div[1]/ttr-game-stage/button')
-            self.play.click()
-            self.timer = int(driver.find_element_by_xpath('/html/body/ttr-root/ttr-root-app/div/div/section/ttr-play-page/section/div/ttr-festival-preview/ttr-game-preview/mat-card/div[2]/ttr-game-stages/div/div[1]/ttr-game-stage/div').text.strip())
-            time.sleep(self.timer)
-        elif self.type == 'studio':
-            self.question_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-studio/ttr-game-holder/div/div/div/ttr-game-footpedal/section[2]/section/section/ttr-game-question/span[2]'
-            self.play_again_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-studio/ttr-game-holder/div/div/div/button[2]'
-            self.play = driver.find_element_by_xpath('/html/body/ttr-root/ttr-root-app/div/div/section/ttr-play-page/section/div/ttr-studio-preview/ttr-game-preview/mat-card/div[1]/div[1]/section/button')
+        self.game_info = self.get_type_info()
+        if self.type != 'festival':
             self.play.click()
         for i in range(0, int(self.rounds)):
             gui.update_status('answering questions...')
@@ -93,13 +79,13 @@ class Bot:
             while time.time() < self.t_end:
                 time.sleep(0.2)
                 try:
-                    self.answer = self.parse_question(driver.find_element_by_xpath(self.question_xpath))
+                    self.answer = self.parse_question(driver.find_element_by_xpath(self.game_info[0]))
                     driver.find_element_by_xpath('/html/body').send_keys(self.answer, Keys.ENTER)
                 except:
                     break
             gui.update_status('game ended, going into new game...')
             time.sleep(6)
-            self.play_again = driver.find_element_by_xpath(self.play_again_xpath)
+            self.play_again = driver.find_element_by_xpath(self.game_info[1])
             self.play_again.click()
 
         gui.update_status('Hack ended')
@@ -114,6 +100,25 @@ class Bot:
             self.ans = int(int(self.word_list[0]) * int(self.word_list[2]))
         return str(self.ans)
 
+    def get_type_info(self):
+        if self.type == 'garage':
+            self.question_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-garage/ttr-game-holder/div/div/div/ttr-game-footpedal/section[2]/section/section/ttr-game-question/span[2]'
+            self.play_again_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-garage/ttr-game-holder/div/div/div/button[2]'
+            self.play = driver.find_element_by_xpath('/html/body/ttr-root/ttr-root-app/div/div/section/ttr-play-page/section/div/ttr-garage-preview/ttr-game-preview/mat-card/div[1]/div[1]/section/section')
+        elif self.type == 'festival':
+            self.question_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-festival/ttr-game-holder/div/div/div/ttr-game-footpedal/section[2]/section/section/ttr-game-question/span[2]'
+            self.play_again_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-garage/ttr-game-holder/div/div/div/button[2]'
+            self.play = driver.find_element_by_xpath('/html/body/ttr-root/ttr-root-app/div/div/section/ttr-play-page/section/div/ttr-festival-preview/ttr-game-preview/mat-card/div[2]/ttr-game-stages/div/div[1]/ttr-game-stage/button')
+            self.play.click()
+            self.timer = int(driver.find_element_by_xpath('/html/body/ttr-root/ttr-root-app/div/div/section/ttr-play-page/section/div/ttr-festival-preview/ttr-game-preview/mat-card/div[2]/ttr-game-stages/div/div[1]/ttr-game-stage/div').text.strip())
+            time.sleep(self.timer)
+        elif self.type == 'studio':
+            self.question_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-studio/ttr-game-holder/div/div/div/ttr-game-footpedal/section[2]/section/section/ttr-game-question/span[2]'
+            self.play_again_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-studio/ttr-game-holder/div/div/div/button[2]'
+            self.play = driver.find_element_by_xpath('/html/body/ttr-root/ttr-root-app/div/div/section/ttr-play-page/section/div/ttr-studio-preview/ttr-game-preview/mat-card/div[1]/div[1]/section/button')
+
+        return self.question_xpath, self.play_again_xpath
+
     def end(self):
         global driver
         driver.quit()
@@ -121,53 +126,53 @@ class Bot:
         return None
 
 
-class Gui:
+class Gui(tk.Tk):
     def __init__(self):
-        pass
+        super().__init__()
+        self.title('TThack')
+        self.geometry('200x420')
 
-    def draw(self):
-        global root
-        global bot
-
-        if not root:
-            root  = tk.Tk()
-            root.geometry('280x350')
-
-            self.type = tk.StringVar()
-            self.status_message = tk.StringVar()
-            self.school_label = tk.Label(text="School")
-            self.school_entry = tk.Entry()
-            self.username_label = tk.Label(text="Username")
-            self.username_entry = tk.Entry()
-            self.password_label = tk.Label(text="Password")
-            self.password_entry = tk.Entry()
-            self.rounds_label = tk.Label(text="Number Of Rounds(Leave Blank For Infinite)")
-            self.rounds_entry = tk.Entry()
-            self.type_label = tk.Label(text="Game Mode")
-            self.type_entry_one = tk.Radiobutton(text="Garage", value="garage", variable=self.type)
-            self.type_entry_two = tk.Radiobutton(text="Festival", value="festival", variable=self.type)
-            self.type_entry_three = tk.Radiobutton(text="Studio", value="studio", variable=self.type)
-            self.submit = tk.Button(text="Start Hack", command=self.send_values)
-            self.end = tk.Button(text="End Hack", command=bot.end)
-            self.status = tk.Label(textvariable=self.status_message)
-            self.status_message.set('Waiting...')
-            self.school_label.pack()
-            self.school_entry.pack()
-            self.username_label.pack()
-            self.username_entry.pack()
-            self.password_label.pack()
-            self.password_entry.pack()
-            self.rounds_label.pack()
-            self.rounds_entry.pack()
-            self.type_label.pack()
-            self.type_entry_one.pack()
-            self.type_entry_two.pack()
-            self.type_entry_three.pack()
-            self.submit.pack()
-            self.end.pack()
-            self.status.pack()
-
-            root.mainloop()
+        self.type = tk.StringVar()
+        self.status_message = tk.StringVar()
+        self.school_label = tk.Label(text="School", justify="left")
+        self.school_entry = tk.Entry()
+        self.username_label = tk.Label(text="Username")
+        self.username_entry = tk.Entry()
+        self.password_label = tk.Label(text="Password")
+        self.password_entry = tk.Entry()
+        self.rounds_label = tk.Label(text="Number Of Rounds")
+        self.rounds_entry = tk.Entry()
+        self.type_label = tk.Label(text="Game Mode")
+        self.name_entry = tk.Entry(self)
+        self.type_entry_one = tk.Radiobutton(text="Garage", value="garage", variable=self.type, command=self.disable_entry)
+        self.type_entry_two = tk.Radiobutton(text="Festival", value="festival", variable=self.type, command=self.disable_entry)
+        self.type_entry_three = tk.Radiobutton(text="Studio", value="studio", variable=self.type, command=self.disable_entry)
+        self.type_entry_five = tk.Radiobutton(text="Soundcheck", value="soundcheck", variable=self.type, command=self.disable_entry)
+        self.type_entry_six = tk.Radiobutton(text="Arena", value="arena", variable=self.type, command=self.disable_entry)
+        self.type_entry_four = tk.Radiobutton(text="Rockslam", value="rockslam", variable=self.type, command=self.enable_entry)
+        self.type.set('garage')
+        self.submit = tk.Button(text="Start Hack", command=self.send_values)
+        self.end = tk.Button(text="End Hack", command=bot.end)
+        self.status = tk.Label(textvariable=self.status_message)
+        self.status_message.set('Waiting...')
+        self.school_label.pack(anchor="w")
+        self.school_entry.pack(anchor="w")
+        self.username_label.pack(anchor="w")
+        self.username_entry.pack(anchor="w")
+        self.password_label.pack(anchor="w")
+        self.password_entry.pack(anchor="w")
+        self.rounds_label.pack(anchor="w")
+        self.rounds_entry.pack(anchor="w")
+        self.type_label.pack(anchor="w")
+        self.type_entry_one.pack(anchor="w")
+        self.type_entry_two.pack(anchor="w")
+        self.type_entry_three.pack(anchor="w")
+        self.type_entry_five.pack(anchor="w")
+        self.type_entry_six.pack(anchor="w")
+        self.type_entry_four.pack(anchor="w")
+        self.submit.pack(anchor="w")
+        self.end.pack(anchor="w")
+        self.status.pack(anchor="w")
 
     def send_values(self):
         global bot
@@ -180,6 +185,9 @@ class Gui:
         except:
             self.rounds_text = 1000000
         self.type_text = self.type.get()
+        if self.type_text == 'rockslam' or self.type_text == 'arena' or self.type_text == 'soundcheck':
+            self.update_status(f'Sorry! {self.type_text} is not available yet.')
+            return None
         self.login = threading.Thread(target = bot.login, args=(self.school_text, self.username_text, self.password_text, self.type_text, self.rounds_text,))
         self.login.start()
 
@@ -188,7 +196,12 @@ class Gui:
         self.message = message
         self.status_message.set(message)
 
+    def enable_entry(self):
+        self.name_entry.pack(before=self.submit, anchor="w")
 
+
+    def disable_entry(self):
+        self.name_entry.pack_forget()
 
 
 if __name__ == '__main__':
@@ -196,4 +209,4 @@ if __name__ == '__main__':
     root = None
     bot = Bot()
     gui = Gui()
-    gui.draw()
+    gui.mainloop()
