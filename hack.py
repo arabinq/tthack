@@ -1,6 +1,9 @@
 import tkinter as tk
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
+from selenium.webdriver.common.by import By
+from selenium.webdriver.support.ui import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
 import threading
 import time
 import sys
@@ -28,19 +31,27 @@ class Bot:
         self.password = password
         self.rounds = rounds
         self.type = type
+        self.coins = 0
 
         gui.update_status('Logging in...')
         driver = webdriver.Chrome(self.path)
-        driver.get('https://play.ttrockstars.com/auth/school/student')
-        time.sleep(2)
         gui.update_status('Inputting school...')
-        self.login_school = driver.find_element_by_xpath('//*[@id="mat-input-0"]')
+        driver.get('https://play.ttrockstars.com/auth/school/student')
+        try:
+            self.login_school = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, '//*[@id="mat-input-0"]'))
+            )
+        except:
+            driver.quit()
+            gui.update_status('Error: Problem Loading Page.')
+            return None
         self.login_school.send_keys(self.school)
         time.sleep(1)
         self.login_school.send_keys(Keys.RETURN)
-        time.sleep(1)
         try:
-            self.login_username = driver.find_element_by_xpath('//*[@id="mat-input-1"]')
+            self.login_username = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, '//*[@id="mat-input-1"]'))
+            )
             gui.update_status('Inputting Username...')
         except:
             driver.quit()
@@ -49,7 +60,14 @@ class Bot:
         self.login_username.send_keys(self.username)
         driver.find_element_by_xpath('/html/body/ttr-root/ttr-root-app/div/div/section/ttr-login2/ttr-splash/div/div/div/ttr-login-form/div/form/mat-card/div[3]/div[2]/button').click()
         gui.update_status('Inputting Password...')
-        self.login_password = driver.find_element_by_xpath('//*[@id="mat-input-2"]')
+        try:
+            self.login_password = WebDriverWait(driver, 10).until(
+                EC.presence_of_element_located((By.XPATH, '//*[@id="mat-input-2"]'))
+            )
+        except:
+            driver.quit()
+            gui.update_status('Error: Problem Loading Page.')
+            return None
         self.login_password.send_keys(self.password, Keys.RETURN)
         time.sleep(2)
         try:
@@ -77,18 +95,27 @@ class Bot:
             time.sleep(6)
             self.t_end = time.time() + 60 * 3
             while time.time() < self.t_end:
-                time.sleep(0.2)
                 try:
+                    self.find_question = WebDriverWait(driver, 1, poll_frequency=0.2).until(
+                        EC.presence_of_element_located((By.XPATH, self.game_info[0]))
+                    )
                     self.answer = self.parse_question(driver.find_element_by_xpath(self.game_info[0]))
                     driver.find_element_by_xpath('/html/body').send_keys(self.answer, Keys.ENTER)
                 except:
                     break
             gui.update_status('game ended, going into new game...')
             time.sleep(6)
+            self.coins += self.get_coins(driver.find_element_by_xpath(self.game_info[2]))
+            gui.update_coins(str(self.coins))
             self.play_again = driver.find_element_by_xpath(self.game_info[1])
             self.play_again.click()
 
         gui.update_status('Hack ended')
+
+    def get_coins(self, location):
+        self.location = location
+        self.new_coins = int(self.location.text)
+        return self.new_coins
 
     def parse_question(self, location):
         self.location = location
@@ -117,7 +144,7 @@ class Bot:
             self.play_again_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-studio/ttr-game-holder/div/div/div/button[2]'
             self.play = driver.find_element_by_xpath('/html/body/ttr-root/ttr-root-app/div/div/section/ttr-play-page/section/div/ttr-studio-preview/ttr-game-preview/mat-card/div[1]/div[1]/section/button')
 
-        return self.question_xpath, self.play_again_xpath
+        return self.question_xpath, self.play_again_xpath, '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-garage/ttr-game-holder/div/div/ttr-game-results/div/div[2]/ttr-game-results-summary/div/div[1]/span[1]'
 
     def end(self):
         global driver
@@ -130,10 +157,11 @@ class Gui(tk.Tk):
     def __init__(self):
         super().__init__()
         self.title('TThack')
-        self.geometry('200x420')
+        self.geometry('200x440')
 
         self.type = tk.StringVar()
         self.status_message = tk.StringVar()
+        self.coins_message = tk.StringVar()
         self.school_label = tk.Label(text="School", justify="left")
         self.school_entry = tk.Entry()
         self.username_label = tk.Label(text="Username")
@@ -153,6 +181,8 @@ class Gui(tk.Tk):
         self.type.set('garage')
         self.submit = tk.Button(text="Start Hack", command=self.send_values)
         self.end = tk.Button(text="End Hack", command=bot.end)
+        self.coins = tk.Label(textvariable=self.coins_message)
+        self.coins_message.set('Coins Earned So Far: 0')
         self.status = tk.Label(textvariable=self.status_message)
         self.status_message.set('Waiting...')
         self.school_label.pack(anchor="w")
@@ -172,6 +202,7 @@ class Gui(tk.Tk):
         self.type_entry_four.pack(anchor="w")
         self.submit.pack(anchor="w")
         self.end.pack(anchor="w")
+        self.coins.pack(anchor="w")
         self.status.pack(anchor="w")
 
     def send_values(self):
@@ -191,10 +222,13 @@ class Gui(tk.Tk):
         self.login = threading.Thread(target = bot.login, args=(self.school_text, self.username_text, self.password_text, self.type_text, self.rounds_text,))
         self.login.start()
 
+    def update_coins(self, coins):
+        self.messagecoins = coins
+        self.coins_message.set(f'Coins Earned So Far: {coins}')
 
     def update_status(self, message):
         self.message = message
-        self.status_message.set(message)
+        self.status_message.set(f'Status: {message}')
 
     def enable_entry(self):
         self.name_entry.pack(before=self.submit, anchor="w")
@@ -206,7 +240,6 @@ class Gui(tk.Tk):
 
 if __name__ == '__main__':
     driver = None
-    root = None
     bot = Bot()
     gui = Gui()
     gui.mainloop()
