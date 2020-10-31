@@ -3,10 +3,19 @@ from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 import threading
 import time
+import sys
+import os
+
+def resource_path(relative_path):
+    try:
+        base_path = sys._MEIPASS
+    except Exception:
+        base_path = os.path.dirname(__file__)
+    return os.path.join(base_path, relative_path)
 
 class Bot:
     def __init__(self):
-        self.path = 'D:\coding\chromedriver.exe'
+        self.path = resource_path('./driver/chromedriver.exe')
 
 
     def login(self, school, username, password, type):
