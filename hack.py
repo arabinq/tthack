@@ -68,25 +68,30 @@ class Bot:
         global gui
 
 
-
+        gui.update_status(f'Going Into {self.type} Game...')
         if self.type == 'garage':
-            gui.update_status('Going Into Garage Game...')
             self.question_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-garage/ttr-game-holder/div/div/div/ttr-game-footpedal/section[2]/section/section/ttr-game-question/span[2]'
+            self.play_again_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-garage/ttr-game-holder/div/div/div/button[2]'
             self.play = driver.find_element_by_xpath('/html/body/ttr-root/ttr-root-app/div/div/section/ttr-play-page/section/div/ttr-garage-preview/ttr-game-preview/mat-card/div[1]/div[1]/section/section')
             self.play.click()
         elif self.type == 'festival':
-            gui.update_status('Going Into Festival Game...')
             self.question_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-festival/ttr-game-holder/div/div/div/ttr-game-footpedal/section[2]/section/section/ttr-game-question/span[2]'
+            self.play_again_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-garage/ttr-game-holder/div/div/div/button[2]'
             self.play = driver.find_element_by_xpath('/html/body/ttr-root/ttr-root-app/div/div/section/ttr-play-page/section/div/ttr-festival-preview/ttr-game-preview/mat-card/div[2]/ttr-game-stages/div/div[1]/ttr-game-stage/button')
             self.play.click()
             self.timer = int(driver.find_element_by_xpath('/html/body/ttr-root/ttr-root-app/div/div/section/ttr-play-page/section/div/ttr-festival-preview/ttr-game-preview/mat-card/div[2]/ttr-game-stages/div/div[1]/ttr-game-stage/div').text.strip())
             time.sleep(self.timer)
-        gui.update_status('answering questions...')
+        elif self.type == 'studio':
+            self.question_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-studio/ttr-game-holder/div/div/div/ttr-game-footpedal/section[2]/section/section/ttr-game-question/span[2]'
+            self.play_again_xpath = '/html/body/ttr-root/ttr-root-app/div/div/section/ttr-studio/ttr-game-holder/div/div/div/button[2]'
+            self.play = driver.find_element_by_xpath('/html/body/ttr-root/ttr-root-app/div/div/section/ttr-play-page/section/div/ttr-studio-preview/ttr-game-preview/mat-card/div[1]/div[1]/section/button')
+            self.play.click()
         for i in range(0, int(self.rounds)):
+            gui.update_status('answering questions...')
             time.sleep(6)
             self.t_end = time.time() + 60 * 3
             while time.time() < self.t_end:
-                time.sleep(0.15)
+                time.sleep(0.2)
                 try:
                     self.answer = self.parse_question(driver.find_element_by_xpath(self.question_xpath))
                     driver.find_element_by_xpath('/html/body').send_keys(self.answer, Keys.ENTER)
@@ -94,7 +99,7 @@ class Bot:
                     break
             gui.update_status('game ended, going into new game...')
             time.sleep(6)
-            self.play_again = driver.find_element_by_xpath('/html/body/ttr-root/ttr-root-app/div/div/section/ttr-garage/ttr-game-holder/div/div/div/button[2]')
+            self.play_again = driver.find_element_by_xpath(self.play_again_xpath)
             self.play_again.click()
 
         gui.update_status('Hack ended')
@@ -126,7 +131,7 @@ class Gui:
 
         if not root:
             root  = tk.Tk()
-            root.geometry('300x300')
+            root.geometry('280x350')
 
             self.type = tk.StringVar()
             self.status_message = tk.StringVar()
@@ -141,6 +146,7 @@ class Gui:
             self.type_label = tk.Label(text="Game Mode")
             self.type_entry_one = tk.Radiobutton(text="Garage", value="garage", variable=self.type)
             self.type_entry_two = tk.Radiobutton(text="Festival", value="festival", variable=self.type)
+            self.type_entry_three = tk.Radiobutton(text="Studio", value="studio", variable=self.type)
             self.submit = tk.Button(text="Start Hack", command=self.send_values)
             self.end = tk.Button(text="End Hack", command=bot.end)
             self.status = tk.Label(textvariable=self.status_message)
@@ -156,6 +162,7 @@ class Gui:
             self.type_label.pack()
             self.type_entry_one.pack()
             self.type_entry_two.pack()
+            self.type_entry_three.pack()
             self.submit.pack()
             self.end.pack()
             self.status.pack()
@@ -171,7 +178,7 @@ class Gui:
         try:
             self.rounds_text = int(self.rounds_entry.get())
         except:
-            self.rounds_text = math.inf
+            self.rounds_text = 1000000
         self.type_text = self.type.get()
         self.login = threading.Thread(target = bot.login, args=(self.school_text, self.username_text, self.password_text, self.type_text, self.rounds_text,))
         self.login.start()
