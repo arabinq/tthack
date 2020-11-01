@@ -1,4 +1,6 @@
+from tkinter import ttk
 import tkinter as tk
+from ttkthemes import ThemedStyle
 from selenium import webdriver
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By
@@ -105,10 +107,21 @@ class Bot:
                     break
             gui.update_status('game ended, going into new game...')
             time.sleep(6)
-            self.coins += self.get_coins(driver.find_element_by_xpath(self.game_info[2]))
-            gui.update_coins(str(self.coins))
-            self.play_again = driver.find_element_by_xpath(self.game_info[1])
-            self.play_again.click()
+            try:
+                self.coins += self.get_coins(driver.find_element_by_xpath(self.game_info[2]))
+                gui.update_coins(str(self.coins))
+                self.play_again = driver.find_element_by_xpath(self.game_info[1])
+                self.play_again.click()
+            except:
+                try:
+                    try:
+                        self.home = driver.find_element_by_xpath('/html/body/ttr-root/ttr-root-app/div/div/section/ttr-festival/ttr-game-holder/div/div/div/button')
+                        self.home.click()
+                        self.get_type_info()
+                    except:
+                        self.get_type_info()
+                except:
+                    self.end()
 
         gui.update_status('Hack ended')
 
@@ -156,34 +169,37 @@ class Bot:
 class Gui(tk.Tk):
     def __init__(self):
         super().__init__()
+        style = ThemedStyle(self)
+        style.theme_use('yaru')
         self.title('TThack')
-        self.geometry('200x440')
+        self.geometry('230x500')
 
         self.type = tk.StringVar()
         self.status_message = tk.StringVar()
         self.coins_message = tk.StringVar()
-        self.school_label = tk.Label(text="School", justify="left")
-        self.school_entry = tk.Entry()
-        self.username_label = tk.Label(text="Username")
-        self.username_entry = tk.Entry()
-        self.password_label = tk.Label(text="Password")
-        self.password_entry = tk.Entry()
-        self.rounds_label = tk.Label(text="Number Of Rounds")
-        self.rounds_entry = tk.Entry()
-        self.type_label = tk.Label(text="Game Mode")
-        self.name_entry = tk.Entry(self)
-        self.type_entry_one = tk.Radiobutton(text="Garage", value="garage", variable=self.type, command=self.disable_entry)
-        self.type_entry_two = tk.Radiobutton(text="Festival", value="festival", variable=self.type, command=self.disable_entry)
-        self.type_entry_three = tk.Radiobutton(text="Studio", value="studio", variable=self.type, command=self.disable_entry)
-        self.type_entry_five = tk.Radiobutton(text="Soundcheck", value="soundcheck", variable=self.type, command=self.disable_entry)
-        self.type_entry_six = tk.Radiobutton(text="Arena", value="arena", variable=self.type, command=self.disable_entry)
-        self.type_entry_four = tk.Radiobutton(text="Rockslam", value="rockslam", variable=self.type, command=self.enable_entry)
+        self.scrollbar = ttk.Scrollbar(self)
+        self.school_label = ttk.Label(text="School", justify="left")
+        self.school_entry = ttk.Entry()
+        self.username_label = ttk.Label(text="Username")
+        self.username_entry = ttk.Entry()
+        self.password_label = ttk.Label(text="Password")
+        self.password_entry = ttk.Entry()
+        self.rounds_label = ttk.Label(text="Number Of Rounds")
+        self.rounds_entry = ttk.Entry()
+        self.type_label = ttk.Label(text="Game Mode")
+        self.name_entry = ttk.Entry(self)
+        self.type_entry_one = ttk.Radiobutton(text="Garage", value="garage", variable=self.type, command=self.disable_entry)
+        self.type_entry_two = ttk.Radiobutton(text="Festival", value="festival", variable=self.type, command=self.disable_entry)
+        self.type_entry_three = ttk.Radiobutton(text="Studio", value="studio", variable=self.type, command=self.disable_entry)
+        self.type_entry_five = ttk.Radiobutton(text="Soundcheck", value="soundcheck", variable=self.type, command=self.disable_entry)
+        self.type_entry_six = ttk.Radiobutton(text="Arena", value="arena", variable=self.type, command=self.disable_entry)
+        self.type_entry_four = ttk.Radiobutton(text="Rockslam", value="rockslam", variable=self.type, command=self.enable_entry)
         self.type.set('garage')
-        self.submit = tk.Button(text="Start Hack", command=self.send_values)
-        self.end = tk.Button(text="End Hack", command=bot.end)
-        self.coins = tk.Label(textvariable=self.coins_message)
+        self.submit = ttk.Button(text="Start Hack", command=self.send_values)
+        self.end = ttk.Button(text="End Hack", command=lambda: threading.Thread(target=bot.end).start())
+        self.coins = ttk.Label(textvariable=self.coins_message)
         self.coins_message.set('Coins Earned So Far: 0')
-        self.status = tk.Label(textvariable=self.status_message)
+        self.status = ttk.Label(textvariable=self.status_message)
         self.status_message.set('Waiting...')
         self.school_label.pack(anchor="w")
         self.school_entry.pack(anchor="w")
@@ -236,6 +252,8 @@ class Gui(tk.Tk):
 
     def disable_entry(self):
         self.name_entry.pack_forget()
+
+
 
 
 if __name__ == '__main__':
