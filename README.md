@@ -17,3 +17,10 @@ This program can:
 
 - Arena, rockslam and soundcheck modes coming soon.
 
+# Bugs
+
+- Currently the festival mode may not work correctly on some devices.
+- You may be kicked out of festival games.
+- Contact me for more bug reports or create a new issue [here](https://github.com/faizanshah-python/tthack/issues)
+
+
